@@ -5,8 +5,6 @@ package com.aneesh.ionite;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -14,13 +12,9 @@ import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,139 +38,122 @@ public class TimerActivity extends Activity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.timer);
-        try {
-            ActionBar actionBar = getActionBar();
-            actionBar.setHomeButtonEnabled(true);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            schedule = (ArrayList<String[]>) MainActivity.output[2];
-            String lastEndTime = "";
-            for (int i = 0; i < schedule.size(); i++) {
-                String startTime = schedule.get(i)[1].split(" - ")[0];
-                if (!lastEndTime.equals("") && !lastEndTime.equals(startTime)) {
-                    String[] kash = {"Passing Time - " + schedule.get(i)[0], lastEndTime + " - " + startTime};
-                    schedule.add(i, kash);
-                }
-                lastEndTime = schedule.get(i)[1].split(" - ")[1];
+
+        ActionBar actionBar = getActionBar();
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        schedule = (ArrayList<String[]>) MainActivity.output[2];
+        String lastEndTime = "";
+        for (int i = 0; i < schedule.size(); i++) {
+            String startTime = schedule.get(i)[1].split(" - ")[0];
+            if (!lastEndTime.equals("") && !lastEndTime.equals(startTime)) {
+                String[] kash = {"Passing Time - " + schedule.get(i)[0], lastEndTime + " - " + startTime};
+                schedule.add(i, kash);
             }
-            SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-            display = SP.getBoolean("DispOp", false);
-            timeUntil = (TextView) findViewById(R.id.textView1);
-            otherOne = (TextView) findViewById(R.id.textView);
-            currentClass = MainActivity.getCurrentClass(schedule, (String) MainActivity.output[1]);
-            if (!currentClass.equals("NONE")) {
-                for (String[] thingy : schedule) {
-                    if (thingy[0].equals(currentClass)) {
-                        String timing = thingy[1];
-                        String endTime = "";
-                        String[] parts = timing.split(" - ");
-                        endTime = parts[1];
+            lastEndTime = schedule.get(i)[1].split(" - ")[1];
+        }
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        display = SP.getBoolean("DispOp", false);
+        timeUntil = (TextView) findViewById(R.id.textView1);
+        otherOne = (TextView) findViewById(R.id.textView);
+        currentClass = MainActivity.getCurrentClass(schedule, (String) MainActivity.output[1]);
+        if (!currentClass.equals("NONE")) {
+            for (String[] thingy : schedule) {
+                if (thingy[0].equals(currentClass)) {
+                    String timing = thingy[1];
+                    String endTime = "";
+                    String[] parts = timing.split(" - ");
+                    endTime = parts[1];
 
-                        int endTimeHour = 0;
-                        int endTimeMin = 0;
+                    int endTimeHour = 0;
+                    int endTimeMin = 0;
 
-                        parts = endTime.split(":");
-                        endTimeHour = Integer.parseInt(parts[0]);
-                        endTimeMin = Integer.parseInt(parts[1]);
+                    parts = endTime.split(":");
+                    endTimeHour = Integer.parseInt(parts[0]);
+                    endTimeMin = Integer.parseInt(parts[1]);
 
-                        if (endTimeHour < 8)
-                            endTimeHour += 12;
+                    if (endTimeHour < 8)
+                        endTimeHour += 12;
 
-                        Calendar myCal = Calendar.getInstance();
-                        myCal.set(Calendar.HOUR_OF_DAY, endTimeHour);
-                        myCal.set(Calendar.MINUTE, endTimeMin);
-                        myCal.set(Calendar.SECOND, 0);
-                        myCal.set(Calendar.MILLISECOND, 0);
-                        timeLeft = myCal.getTimeInMillis() - System.currentTimeMillis();
-                        break;
+                    Calendar myCal = Calendar.getInstance();
+                    myCal.set(Calendar.HOUR_OF_DAY, endTimeHour);
+                    myCal.set(Calendar.MINUTE, endTimeMin);
+                    myCal.set(Calendar.SECOND, 0);
+                    myCal.set(Calendar.MILLISECOND, 0);
+                    timeLeft = myCal.getTimeInMillis() - System.currentTimeMillis();
+                    break;
+                }
+            }
+            Calendar myCal = Calendar.getInstance();
+            realday = "" + myCal.get(Calendar.DAY_OF_MONTH) + myCal.get(Calendar.MONTH);
+            int[] arr = setScheduleDate((String) MainActivity.output[0]);
+            schedday = "" + arr[1] + arr[0];
+        }
+        java.util.Date date = new java.util.Date();
+
+        Time now = new Time(date.getTime());
+
+        // Time now = new Time(cal1.getTime().getTime());
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 8);
+        cal.set(Calendar.MINUTE, 40);
+        cal.set(Calendar.SECOND, 00);
+
+        Time startSchool = new Time(cal.getTime().getTime());
+
+        cal.set(Calendar.HOUR_OF_DAY, 16);
+        cal.set(Calendar.MINUTE, 00);
+        cal.set(Calendar.SECOND, 00);
+
+        Time endSchool = new Time(cal.getTime().getTime());
+
+        if ((!currentClass.equals("NONE") && !currentClass.equals(""))
+                || (realday.equals(schedday) && (now.after(startSchool) && now.before(endSchool)))) {
+            new CountDownTimer(timeLeft, 1000) { // adjust the milli seconds
+                // here
+
+                public void onTick(long millisUntilFinished) {
+                    if (currentClass.contains("Passing Time")) {
+                        String classAboutToEnd = currentClass.split(" - ")[1];
+                        otherOne.setText(classAboutToEnd + " will start in:");
+                    } else {
+                        otherOne.setText(currentClass + " will end in:");
                     }
-                }
-                Calendar myCal = Calendar.getInstance();
-                realday = "" + myCal.get(Calendar.DAY_OF_MONTH) + myCal.get(Calendar.MONTH);
-                int[] arr = setScheduleDate((String) MainActivity.output[0]);
-                schedday = "" + arr[1] + arr[0];
-            }
-            java.util.Date date = new java.util.Date();
-
-            Time now = new Time(date.getTime());
-
-            // Time now = new Time(cal1.getTime().getTime());
-
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.HOUR_OF_DAY, 8);
-            cal.set(Calendar.MINUTE, 40);
-            cal.set(Calendar.SECOND, 00);
-
-            Time startSchool = new Time(cal.getTime().getTime());
-
-            cal.set(Calendar.HOUR_OF_DAY, 16);
-            cal.set(Calendar.MINUTE, 00);
-            cal.set(Calendar.SECOND, 00);
-
-            Time endSchool = new Time(cal.getTime().getTime());
-
-            if ((!currentClass.equals("NONE") && !currentClass.equals(""))
-                    || (realday.equals(schedday) && (now.after(startSchool) && now.before(endSchool)))) {
-                new CountDownTimer(timeLeft, 1000) { // adjust the milli seconds
-                    // here
-
-                    public void onTick(long millisUntilFinished) {
-                        if (currentClass.contains("Passing Time")) {
-                            String classAboutToEnd = currentClass.split(" - ")[1];
-                            otherOne.setText(classAboutToEnd + " will start in:");
-                        } else {
-                            otherOne.setText(currentClass + " will end in:");
-                        }
-                        String unformatted = ("" + String.format(FORMAT, TimeUnit.MILLISECONDS.toHours(millisUntilFinished),
-                                TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished)
-                                        - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millisUntilFinished)),
-                                TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) - TimeUnit.MINUTES
-                                        .toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished))));
-                        if (!display) {
-                            String[] parts = unformatted.split(":");
-                            String thingy = "";
-                            for (int i = 0; i < parts.length; i++) {
-                                if (parts[i].equals("00"))
-                                    continue;
-                                else {
-                                    if (i == 0)
-                                        thingy += parts[0] + " hours" + "\n";
-                                    else if (i == 1)
-                                        thingy += parts[1] + " minutes" + "\n";
-                                    else
-                                        thingy += parts[2] + " seconds" + "\n";
-                                }
+                    String unformatted = ("" + String.format(FORMAT, TimeUnit.MILLISECONDS.toHours(millisUntilFinished),
+                            TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished)
+                                    - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millisUntilFinished)),
+                            TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) - TimeUnit.MINUTES
+                                    .toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished))));
+                    if (!display) {
+                        String[] parts = unformatted.split(":");
+                        String thingy = "";
+                        for (int i = 0; i < parts.length; i++) {
+                            if (parts[i].equals("00"))
+                                continue;
+                            else {
+                                if (i == 0)
+                                    thingy += parts[0] + " hours" + "\n";
+                                else if (i == 1)
+                                    thingy += parts[1] + " minutes" + "\n";
+                                else
+                                    thingy += parts[2] + " seconds" + "\n";
                             }
-                            timeUntil.setText(thingy);
-                        } else {
-                            timeUntil.setText(unformatted);
                         }
+                        timeUntil.setText(thingy);
+                    } else {
+                        timeUntil.setText(unformatted);
                     }
-
-                    public void onFinish() {
-                        otherOne.setText(currentClass);
-                        timeUntil.setText("is over!");
-                    }
-                }.start();
-            } else {
-                otherOne.setText("School hasn't");
-                timeUntil.setText("started yet!");
-            }
-        } catch (Exception e) {
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            String exceptionAsString = sw.toString();
-            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-            dlgAlert.setMessage(exceptionAsString);
-            dlgAlert.setTitle("");
-            dlgAlert.setPositiveButton("OK", null);
-            dlgAlert.setCancelable(true);
-            dlgAlert.create().show();
-
-            dlgAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
                 }
-            });
 
+                public void onFinish() {
+                    otherOne.setText(currentClass);
+                    timeUntil.setText("is over!");
+                }
+            }.start();
+        } else {
+            otherOne.setText("School hasn't");
+            timeUntil.setText("started yet!");
         }
     }
 
