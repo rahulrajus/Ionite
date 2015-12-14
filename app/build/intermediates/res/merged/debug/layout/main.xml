@@ -7,7 +7,8 @@
     <ScrollView
         android:id="@+id/scroller"
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
         android:layout_gravity="center">
 
@@ -20,4 +21,23 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp"></LinearLayout>
     </ScrollView>
+
+    <ScrollView
+        android:id="@+id/scroller1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center">
+
+        <LinearLayout
+            android:id="@+id/root1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:animateLayoutChanges="false"
+            android:orientation="vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"></LinearLayout>
+    </ScrollView>
 </RelativeLayout>
+

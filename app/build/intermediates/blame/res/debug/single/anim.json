@@ -24,6 +24,10 @@
         "source": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.1.1/res/anim/abc_slide_out_bottom.xml"
     },
     {
+        "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/pull_in_left.xml",
+        "source": "/Users/akotnana/StudioProjects/Ionite/app/src/main/res/anim/pull_in_left.xml"
+    },
+    {
         "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/push_out_up.xml",
         "source": "/Users/akotnana/StudioProjects/Ionite/app/src/main/res/anim/push_out_up.xml"
     },
@@ -36,8 +40,16 @@
         "source": "/Users/akotnana/StudioProjects/Ionite/app/src/main/res/anim/push_out_down.xml"
     },
     {
+        "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/push_out_left.xml",
+        "source": "/Users/akotnana/StudioProjects/Ionite/app/src/main/res/anim/push_out_left.xml"
+    },
+    {
         "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/abc_popup_exit.xml",
         "source": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.1.1/res/anim/abc_popup_exit.xml"
+    },
+    {
+        "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/pull_in_right.xml",
+        "source": "/Users/akotnana/StudioProjects/Ionite/app/src/main/res/anim/pull_in_right.xml"
     },
     {
         "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/abc_shrink_fade_out_from_bottom.xml",
@@ -50,6 +62,10 @@
     {
         "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/abc_fade_in.xml",
         "source": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.1.1/res/anim/abc_fade_in.xml"
+    },
+    {
+        "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/push_out_right.xml",
+        "source": "/Users/akotnana/StudioProjects/Ionite/app/src/main/res/anim/push_out_right.xml"
     },
     {
         "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/pull_in_up.xml",

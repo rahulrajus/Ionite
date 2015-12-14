@@ -196,13 +196,6 @@ public class SettingsActivity extends PreferenceActivity {
         Intent pushIntent2 = new Intent(getApplicationContext(), AlarmCreator.class);
         pushIntent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getApplicationContext().startService(pushIntent2);
-        boolean animations = SP.getBoolean("animationSelector", false);
-        LayoutTransition layoutTransition = new LayoutTransition();
-
-        if (animations)
-            MainActivity.llV.setLayoutTransition(layoutTransition);
-        else
-            MainActivity.llV.setLayoutTransition(null);
 
         Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -249,15 +242,6 @@ public class SettingsActivity extends PreferenceActivity {
                 Intent pushIntent2 = new Intent(getApplicationContext(), AlarmCreator.class);
                 pushIntent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 getApplicationContext().startService(pushIntent2);
-
-                SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                boolean animations = SP.getBoolean("animationSelector", false);
-                LayoutTransition layoutTransition = new LayoutTransition();
-
-                if (animations)
-                    MainActivity.llV.setLayoutTransition(layoutTransition);
-                else
-                    MainActivity.llV.setLayoutTransition(null);
 
                 finish();
                 return true;

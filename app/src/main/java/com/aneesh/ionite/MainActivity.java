@@ -1,6 +1,7 @@
 package com.aneesh.ionite;
 
-import android.animation.LayoutTransition;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -10,14 +11,12 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
@@ -27,6 +26,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -61,12 +64,13 @@ public class MainActivity extends Activity {
     public static boolean retrieved = false;
     // static
     static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    static LinearLayout llV;
     static int buttonsPressed = 0;
-    static ScrollView scroller;
     static int schedYear;
     static int schedMonth;
     static int schedDay;
+    public static AnimatorSet setRightOut = null;
+    public static AnimatorSet setLeftIn = null;
+
     private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
         // when dialog box is closed, below method will be called.
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
@@ -105,7 +109,7 @@ public class MainActivity extends Activity {
                 name = (String) output[1];
                 schedule = (ArrayList<String[]>) output[2];
                 setScheduleDate(date);
-                display(date, name, schedule);
+                display((LinearLayout) findViewById(R.id.root), date, name, schedule);
             }
         }
     };
@@ -238,20 +242,93 @@ public class MainActivity extends Activity {
         Intent pushIntent2 = new Intent(this, com.aneesh.ionite.AlarmCreator.class);
         startService(pushIntent2);
 
+        setRightOut = (AnimatorSet) AnimatorInflater.loadAnimator(getApplicationContext(),
+                R.animator.flight_right_out);
+        setLeftIn = (AnimatorSet) AnimatorInflater.loadAnimator(getApplicationContext(),
+                R.animator.flight_left_in);
+
         // Setup stuff
-        LinearLayout layoutV = (LinearLayout) findViewById(R.id.root);
-        llV = layoutV;
-        ScrollView scroll = (ScrollView) findViewById(R.id.scroller);
-        scroller = scroll;
+        final LinearLayout root = (LinearLayout) findViewById(R.id.root);
+        final ScrollView scroll = (ScrollView) findViewById(R.id.scroller);
+        final LinearLayout root1 = (LinearLayout) findViewById(R.id.root1);
+        final ScrollView scroll1 = (ScrollView) findViewById(R.id.scroller1);
         RelativeLayout rlayout = (RelativeLayout) findViewById(R.id.mainLayout);
 
         rlayout.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
-            public void onSwipeRight() {
-                switchDays(-1);
+            public void onSwipeLeft() {
+                if(((LinearLayout) findViewById(R.id.root1)).getChildCount() < 1) {
+                    switchDays((LinearLayout) findViewById(R.id.root1), 1);
+                    scroll1.startAnimation(inFromRightAnimation());
+                    scroll1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                        }
+                    }, 500);
+                    scroll.startAnimation(outToLeftAnimation());
+                    scroll.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                        }
+                    }, 500);
+                    //
+                } else {
+                    switchDays((LinearLayout) findViewById(R.id.root), 1);
+                    scroll.startAnimation(inFromRightAnimation());
+                    scroll.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                        }
+                    }, 500);
+                    scroll1.startAnimation(outToLeftAnimation());
+                    scroll1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                        }
+                    }, 500);
+                    //((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                }
             }
 
-            public void onSwipeLeft() {
-                switchDays(1);
+            public void onSwipeRight() {
+                if(((LinearLayout) findViewById(R.id.root1)).getChildCount() < 1) {
+                    switchDays((LinearLayout) findViewById(R.id.root1), -1);
+                    scroll.startAnimation(outToRightAnimation());
+                    scroll.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                        }
+                    }, 500);
+                    scroll1.startAnimation(inFromLeftAnimation());
+                    scroll1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                        }
+                    }, 500);
+                    //((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                } else {
+                    switchDays((LinearLayout) findViewById(R.id.root), -1);
+                    scroll1.startAnimation(outToRightAnimation());
+                    scroll1.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                        }
+                    }, 500);
+                    scroll.startAnimation(inFromLeftAnimation());
+                    scroll.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                        }
+                    }, 500);
+                    //((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                }
             }
 
             public void openTheThing() {
@@ -264,13 +341,45 @@ public class MainActivity extends Activity {
                 return gestureDetector.onTouchEvent(event);
             }
         });
-        scroller.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
-            public void onSwipeRight() {
-                switchDays(-1);
+
+
+        scroll.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
+            public void onSwipeLeft() {
+                switchDays((LinearLayout) findViewById(R.id.root1), 1);
+                scroll1.startAnimation(inFromRightAnimation());
+                scroll1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                    }
+                }, 500);
+                scroll.startAnimation(outToLeftAnimation());
+                scroll.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                    }
+                }, 500);
+                //((LinearLayout) findViewById(R.id.root)).removeAllViews();
             }
 
-            public void onSwipeLeft() {
-                switchDays(1);
+            public void onSwipeRight() {
+                switchDays((LinearLayout) findViewById(R.id.root1), -1);
+                scroll.startAnimation(outToRightAnimation());
+                scroll.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                    }
+                }, 500);
+                scroll1.startAnimation(inFromLeftAnimation());
+                scroll1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                    }
+                }, 500);
+                //((LinearLayout) findViewById(R.id.root)).removeAllViews();
             }
 
             public void openTheThing() {
@@ -283,13 +392,43 @@ public class MainActivity extends Activity {
                 return gestureDetector.onTouchEvent(event);
             }
         });
-        llV.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
-            public void onSwipeRight() {
-                switchDays(-1);
+        root.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
+            public void onSwipeLeft() {
+                switchDays((LinearLayout) findViewById(R.id.root1), 1);
+                scroll1.startAnimation(inFromRightAnimation());
+                scroll1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                    }
+                }, 500);
+                scroll.startAnimation(outToLeftAnimation());
+                scroll.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                    }
+                }, 500);
+                //((LinearLayout) findViewById(R.id.root)).removeAllViews();
             }
 
-            public void onSwipeLeft() {
-                switchDays(1);
+            public void onSwipeRight() {
+                switchDays((LinearLayout) findViewById(R.id.root1), -1);
+                scroll.startAnimation(outToRightAnimation());
+                scroll.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                    }
+                }, 500);
+                scroll1.startAnimation(inFromLeftAnimation());
+                scroll1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                    }
+                }, 500);
+                //((LinearLayout) findViewById(R.id.root)).removeAllViews();
             }
 
             public void openTheThing() {
@@ -302,17 +441,104 @@ public class MainActivity extends Activity {
                 return gestureDetector.onTouchEvent(event);
             }
         });
-
-        try {
-            ViewConfiguration config = ViewConfiguration.get(this);
-            Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
-            if (menuKeyField != null) {
-                menuKeyField.setAccessible(true);
-                menuKeyField.setBoolean(config, false);
+        scroll1.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
+            public void onSwipeLeft() {
+                switchDays((LinearLayout) findViewById(R.id.root), 1);
+                scroll.startAnimation(inFromRightAnimation());
+                scroll.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                    }
+                }, 500);
+                scroll1.startAnimation(outToLeftAnimation());
+                scroll1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                    }
+                }, 500);
+                //((LinearLayout) findViewById(R.id.root1)).removeAllViews();
             }
-        } catch (Exception ex) {
-            // Ignore
-        }
+
+            public void onSwipeRight() {
+                switchDays((LinearLayout) findViewById(R.id.root), -1);
+                scroll1.startAnimation(outToRightAnimation());
+                scroll1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                    }
+                }, 500);
+                scroll.startAnimation(inFromLeftAnimation());
+                scroll.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                    }
+                }, 500);
+                //((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+            }
+
+            public void openTheThing() {
+                Intent intent1 = new Intent(MainActivity.this, TimerActivity.class);
+                startActivity(intent1);
+                overridePendingTransition(R.anim.pull_in_up, R.anim.push_out_down);
+            }
+
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
+        root1.setOnTouchListener(new OnSwipeTouchListener(getApplicationContext()) {
+            public void onSwipeLeft() {
+                switchDays((LinearLayout) findViewById(R.id.root), 1);
+                scroll.startAnimation(inFromRightAnimation());
+                scroll.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                    }
+                }, 500);
+                scroll1.startAnimation(outToLeftAnimation());
+                scroll1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                    }
+                }, 500);
+                //((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+            }
+
+            public void onSwipeRight() {
+                switchDays((LinearLayout) findViewById(R.id.root), -1);
+                scroll1.startAnimation(outToRightAnimation());
+                scroll1.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                    }
+                }, 500);
+                scroll.startAnimation(inFromLeftAnimation());
+                scroll.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                    }
+                }, 500);
+                //((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+            }
+
+            public void openTheThing() {
+                Intent intent1 = new Intent(MainActivity.this, TimerActivity.class);
+                startActivity(intent1);
+                overridePendingTransition(R.anim.pull_in_up, R.anim.push_out_down);
+            }
+
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
 
         final String PREFS_NAME = "MyPrefsFile";
         final String PREF_VERSION_CODE_KEY = "version_code";
@@ -328,88 +554,22 @@ public class MainActivity extends Activity {
             return;
         }
 
-        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        boolean animations = SP.getBoolean("animationSelector", false);
-        LayoutTransition layoutTransition = new LayoutTransition();
-
-        if (animations)
-            MainActivity.llV.setLayoutTransition(layoutTransition);
-        else
-            MainActivity.llV.setLayoutTransition(null);
-
-        // Get saved version code
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        int savedVersionCode = prefs.getInt(PREF_VERSION_CODE_KEY, DOESNT_EXIST);
         File file = new File("data.txt");
         // Check for first run or upgrade
-        if (savedVersionCode == DOESNT_EXIST || currentVersionCode > savedVersionCode || !file.exists()) {
-            String date = "";
-            String name = "";
-            ArrayList<String[]> schedule = null;
-            try {
-                output = new Retriever().execute("https://ion.tjhsst.edu").get();
-            } catch (InterruptedException | ExecutionException e2) {
-                // TODO Auto-generated catch block
-                e2.printStackTrace();
-            }
-            if (output == null) {
-                try {
-                    output = new Retriever().execute("https://ion.tjhsst.edu").get();
-                } catch (InterruptedException | ExecutionException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-            }
-            date = (String) output[0];
-            name = (String) output[1];
-            schedule = (ArrayList<String[]>) output[2];
-            setScheduleDate(date);
-            display(date, name, schedule);
-
-            String stored = date + "," + name + ",";
-            for (String[] classes : schedule) {
-                stored += classes[0] + "," + classes[1] + ",";
-            }
-            stored = stored.substring(0, stored.length() - 1);
-            writeToFile(stored);
-            prefs.edit().putInt(PREF_VERSION_CODE_KEY, currentVersionCode).commit();
-        } else {
-            String date = "";
-            String name = "";
-            ArrayList<String[]> schedule = null;
-            if (shouldRetrieve()) {
-                try {
-                    output = new Retriever().execute("https://ion.tjhsst.edu").get();
-                } catch (InterruptedException | ExecutionException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-                date = (String) output[0];
-                name = (String) output[1];
-                schedule = (ArrayList<String[]>) output[2];
-                String stored = date + "," + name + ",";
-                for (String[] classes : schedule) {
-                    stored += classes[0] + "-" + classes[1] + ",";
-                }
-                stored = stored.substring(0, stored.length() - 1);
-                writeToFile(stored);
-            } else {
-                String data = readFromFile();
-                String[] dataArr = data.split(",");
-                date = dataArr[0];
-                name = dataArr[1];
-                schedule = new ArrayList<String[]>();
-                for (int i = 2; i < dataArr.length; i++) {
-                    String[] forreal = dataArr[i].split("-");
-                    String[] array = {forreal[0], forreal[1]};
-                    schedule.add(array);
-                }
-            }
-            setScheduleDate(date);
-            display(date, name, schedule);
-
-            prefs.edit().putInt(PREF_VERSION_CODE_KEY, currentVersionCode).commit();
+        String date = "";
+        String name = "";
+        ArrayList<String[]> schedule = null;
+        try {
+            output = new Retriever().execute("https://ion.tjhsst.edu").get();
+        } catch (InterruptedException | ExecutionException e2) {
+            // TODO Auto-generated catch block
+            e2.printStackTrace();
         }
+        date = (String) output[0];
+        name = (String) output[1];
+        schedule = (ArrayList<String[]>) output[2];
+        setScheduleDate(date);
+        display(root, date, name, schedule);
 
     }
 
@@ -420,7 +580,7 @@ public class MainActivity extends Activity {
         String name = (String) output[1];
         ArrayList<String[]> schedule = (ArrayList<String[]>) output[2];
         setScheduleDate(date);
-        display(date, name, schedule);
+        display((LinearLayout) findViewById(R.id.root), date, name, schedule);
 
     }
 
@@ -518,7 +678,7 @@ public class MainActivity extends Activity {
         return;
     }
 
-    public void switchDays(int id) {
+    public void switchDays(LinearLayout which, int id) {
         if (id == -1) {
 
             Calendar cal = Calendar.getInstance();
@@ -545,7 +705,7 @@ public class MainActivity extends Activity {
             name = (String) output[1];
             schedule = (ArrayList<String[]>) output[2];
             setScheduleDate(date);
-            display(date, name, schedule);
+            display(which, date, name, schedule);
 
         } else {
             Calendar cal = Calendar.getInstance();
@@ -572,7 +732,7 @@ public class MainActivity extends Activity {
             name = (String) output[1];
             schedule = (ArrayList<String[]>) output[2];
             setScheduleDate(date);
-            display(date, name, schedule);
+            display(which, date, name, schedule);
 
         }
     }
@@ -606,9 +766,53 @@ public class MainActivity extends Activity {
         return ret;
     }
 
-    public void display(String day, String name, ArrayList<String[]> schedule) {
-        if (((LinearLayout) llV).getChildCount() > 0)
-            ((LinearLayout) llV).removeAllViews();
+    private Animation inFromRightAnimation() {
+
+        Animation inFromRight = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, +1.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f);
+        inFromRight.setDuration(500);
+        inFromRight.setInterpolator(new AccelerateInterpolator());
+        return inFromRight;
+    }
+
+    private Animation outToLeftAnimation() {
+        Animation outtoLeft = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, -1.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f);
+        outtoLeft.setDuration(500);
+        outtoLeft.setInterpolator(new AccelerateInterpolator());
+        return outtoLeft;
+    }
+
+    private Animation inFromLeftAnimation() {
+        Animation inFromLeft = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, -1.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f);
+        inFromLeft.setDuration(500);
+        inFromLeft.setInterpolator(new AccelerateInterpolator());
+        return inFromLeft;
+    }
+
+    private Animation outToRightAnimation() {
+        Animation outtoRight = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, +1.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f);
+        outtoRight.setDuration(500);
+        outtoRight.setInterpolator(new AccelerateInterpolator());
+        return outtoRight;
+    }
+
+    public void display(LinearLayout which, String day, String name, ArrayList<String[]> schedule) {
+        which.removeAllViews();
         String currentClass = getCurrentClass(schedule, name);
         Calendar c = Calendar.getInstance();
         TextView dater = new TextView(this);
@@ -616,7 +820,7 @@ public class MainActivity extends Activity {
         dater.setTextSize(30);
         dater.setGravity(Gravity.CENTER);
         dater.setTextColor(Color.BLACK);
-        llV.addView(dater);
+        which.addView(dater);
 
         TextView type = new TextView(this);
         type.setText(name);
@@ -631,7 +835,7 @@ public class MainActivity extends Activity {
             type.setTextColor(Color.rgb(0, 153, 0));
         else
             type.setTextColor(Color.BLACK);
-        llV.addView(type);
+        which.addView(type);
 
         for (String[] pair : schedule) {
             if (!pair[0].contains("Passing")) {
@@ -644,7 +848,7 @@ public class MainActivity extends Activity {
                     label.setTextColor(Color.RED);
                     label.setGravity(Gravity.CENTER);
                     label.setPadding(10, 15, 10, 15);
-                    llV.addView(label);
+                    which.addView(label);
                 } else {
                     TextView label1 = new TextView(this);
                     String text = "<b>" + (pair[0] + ":") + "   " + "</b>" + pair[1];
@@ -653,7 +857,7 @@ public class MainActivity extends Activity {
                     label1.setTextColor(Color.BLACK);
                     label1.setGravity(Gravity.CENTER);
                     label1.setPadding(10, 15, 10, 15);
-                    llV.addView(label1);
+                    which.addView(label1);
                 }
             }
         }
@@ -688,7 +892,7 @@ public class MainActivity extends Activity {
                 name = (String) output[1];
                 schedule = (ArrayList<String[]>) output[2];
                 setScheduleDate(date);
-                display(date, name, schedule);
+                display((LinearLayout) findViewById(R.id.root), date, name, schedule);
 
                 String stored = date + "," + name + ",";
                 for (String[] classes : schedule) {
@@ -717,7 +921,7 @@ public class MainActivity extends Activity {
                 name2 = (String) output2[1];
                 schedule2 = (ArrayList<String[]>) output2[2];
                 setScheduleDate(date2);
-                display(date2, name2, schedule2);
+                display((LinearLayout) findViewById(R.id.root), date2, name2, schedule2);
 
                 String stored2 = date2 + "," + name2 + ",";
                 for (String[] classes : schedule2) {
@@ -743,7 +947,9 @@ public class MainActivity extends Activity {
                 name1 = (String) output1[1];
                 schedule1 = (ArrayList<String[]>) output1[2];
                 setScheduleDate(date1);
-                display(date1, name1, schedule1);
+                ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                display((LinearLayout) findViewById(R.id.root), date1, name1, schedule1);
                 String stored1 = date1 + "," + name1 + ",";
                 for (String[] classes : schedule1) {
                     stored1 += classes[0] + "," + classes[1] + ",";
