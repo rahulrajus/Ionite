@@ -15,6 +15,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -23,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * @author Aneesh
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+@TargetApi(Build.VERSION_CODES.KITKAT)
 public class AlarmCreator extends Service {
 
     /*
@@ -45,8 +47,7 @@ public class AlarmCreator extends Service {
         try {
             output = new Retriever().execute("https://ion.tjhsst.edu").get();
         } catch (InterruptedException | ExecutionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+
         }
         date = (String) output[0];
         name = (String) output[1];
@@ -91,8 +92,8 @@ public class AlarmCreator extends Service {
                     long time = date1.getTimeInMillis();
                     pdStart = new Date(time - (delayTime * 60 * 1000));
                     if (delayTime != 0)
-                        scheduleNotification(getNotification(schedule.get(i)[0] + " will start in " + delayTime + " minutes!"), delay, id);
-                    scheduleNotification(getNotification(schedule.get(i)[0] + " just started!"), delay, id + 2);
+                        scheduleNotification(getNotification(schedule.get(i)[0] + " will start in " + delayTime + " minutes!", pdStart.getTime()), delay, id);
+                    scheduleNotification(getNotification(schedule.get(i)[0] + " just started!", pdStart.getTime()), delay, id + 2);
 
                 }
             }
@@ -132,8 +133,8 @@ public class AlarmCreator extends Service {
                     long time = date1.getTimeInMillis();
                     pdend = new Date(time - (delayTime * 60 * 1000));
                     if (delayTime != 0)
-                        scheduleNotification(getNotification(schedule.get(i)[0] + " will end in " + delayTime + " minutes!"), delay, id);
-                    scheduleNotification(getNotification(schedule.get(i)[0] + " just ended!"), delay, id + 2);
+                        scheduleNotification(getNotification(schedule.get(i)[0] + " will end in " + delayTime + " minutes!", pdend.getTime()), delay, id);
+                    scheduleNotification(getNotification(schedule.get(i)[0] + " just ended!",pdend.getTime()), delay, id + 2);
 
                 }
             }
@@ -209,18 +210,21 @@ public class AlarmCreator extends Service {
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
     }
 
-    private Notification getNotification(String content) {
+    private Notification getNotification(String content, long timer) {
         Notification.Builder builder = new Notification.Builder(this);
         builder.setContentTitle("Ionite!");
         builder.setContentText(content);
+        builder.setSmallIcon(R.drawable.ic_launcher);
         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.launcher_pic);
         builder.setLargeIcon(bm);
-        builder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
-        builder.setShowWhen(false);
+        builder.setVibrate(new long[]{0, 1000, 1000});
+        builder.setWhen(timer);
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.setClass(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent sender = PendingIntent.getActivity(this, 192839, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent sender = PendingIntent.getActivity(this, 192839, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
         builder.setContentIntent(sender);
         builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
         return builder.build();

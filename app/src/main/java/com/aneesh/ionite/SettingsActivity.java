@@ -3,11 +3,15 @@ package com.aneesh.ionite;
 import android.animation.LayoutTransition;
 import android.app.ActionBar;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -19,6 +23,8 @@ import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -90,6 +96,7 @@ public class SettingsActivity extends PreferenceActivity {
 
     @Override
     public void onPause() {
+    	try {
         super.onPause();
         String date = "";
         String name = "";
@@ -99,7 +106,7 @@ public class SettingsActivity extends PreferenceActivity {
         name = (String) output[1];
         schedule = (ArrayList<String[]>) output[2];
         int[] mydates = setScheduleDate(date);
-        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this);
         boolean startPeriodNotif = SP.getBoolean("startPeriod", false);
         boolean endPeriodNotif = SP.getBoolean("endPeriod", false);
         int delayTime = SP.getInt("delayTime", 0);
@@ -200,6 +207,23 @@ public class SettingsActivity extends PreferenceActivity {
         Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+    	} catch (Exception e) {
+    		AlertDialog.Builder dlgAlert = new AlertDialog.Builder(SettingsActivity.this);
+    		StringWriter sw = new StringWriter();
+    		PrintWriter pw = new PrintWriter(sw);
+    		e.printStackTrace(pw);
+    		String neil = sw.toString();
+    		dlgAlert.setMessage(neil);
+            dlgAlert.setTitle("Choose another date");
+            dlgAlert.setPositiveButton("OK", null);
+            dlgAlert.setCancelable(true);
+            dlgAlert.create().show();
+
+            dlgAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+    	}
     }
 
     private void cancelNotification(Notification notification, long delay, int id) {
@@ -223,7 +247,9 @@ public class SettingsActivity extends PreferenceActivity {
         builder.setContentTitle("Ionite!");
         builder.setContentText(content);
         builder.setSmallIcon(R.drawable.ic_launcher);
-        builder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.launcher_pic);
+        builder.setLargeIcon(bm);
+        builder.setVibrate(new long[]{0, 1000, 1000});
         builder.setWhen(timer);
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.setClass(this, MainActivity.class);
