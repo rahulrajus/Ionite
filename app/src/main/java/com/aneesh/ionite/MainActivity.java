@@ -57,10 +57,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -85,6 +87,8 @@ public class MainActivity extends Activity {
 	static int schedDay;
 	public static AnimatorSet setRightOut = null;
 	public static AnimatorSet setLeftIn = null;
+    public static boolean APP_EXIT_FLAG = false;
+    public static int realYear = 0;
 
 	private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
 		// when dialog box is closed, below method will be called.
@@ -137,17 +141,22 @@ public class MainActivity extends Activity {
 				}
 				date = (String) output[0];
 				name = (String) output[1];
-				schedule = (ArrayList<String[]>) output[2];
-				if(date.split(", |\\. ").length > 1)
-					setScheduleDate(date);
-				else {
-					schedYear = selectedYear;
-					schedMonth = selectedMonth;
-					schedDay = selectedDay;
-				}
-                LinearLayout lay = ((LinearLayout) findViewById(R.id.root));
-                lay.setVisibility(View.INVISIBLE);
-				display((LinearLayout) findViewById(R.id.root), date, name, schedule, 1);
+                if(name.equalsIgnoreCase("No Internet Connection")) {
+                    Intent i = new Intent(getBaseContext(), InternetActivity.class);
+                    startActivity(i);
+                } else {
+                    schedule = (ArrayList<String[]>) output[2];
+                    if (date.split(", |\\. ").length > 2)
+                        setScheduleDate(date);
+                    else {
+                        schedYear = selectedYear;
+                        schedMonth = selectedMonth;
+                        schedDay = selectedDay;
+                    }
+                    LinearLayout lay = ((LinearLayout) findViewById(R.id.root));
+                    lay.setVisibility(View.INVISIBLE);
+                    display((LinearLayout) findViewById(R.id.root), date, name, schedule, 1);
+                }
 			}
 		}
 
@@ -271,23 +280,6 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		if (!isOnline()) {
-			AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-			dlgAlert.setMessage(
-					"You are not connected to the internet. Connect to a cellular network or WiFi and re-open the app.");
-			dlgAlert.setTitle("No connection");
-			dlgAlert.setCancelable(true);
-			dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					Intent intent = new Intent(Intent.ACTION_MAIN);
-					intent.addCategory(Intent.CATEGORY_HOME);
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					startActivity(intent);
-					finish();
-				}
-			});
-			dlgAlert.create().show();
-		}
 		startYear = new GregorianCalendar(2015, Calendar.SEPTEMBER, 8).getTime();
 		endYear = new GregorianCalendar(2016, Calendar.JUNE, 23).getTime();
 		Intent pushIntent = new Intent(this, com.aneesh.ionite.DayCycle.class);
@@ -654,64 +646,46 @@ public class MainActivity extends Activity {
 		try {
 			output = new Retriever().execute("https://ion.tjhsst.edu").get();
 		} catch (InterruptedException | ExecutionException e2) {
-            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-            dlgAlert.setMessage(
-                    "You are not connected to the internet. Connect to a cellular network or WiFi and re-open the app.");
-            dlgAlert.setTitle("No connection");
-            dlgAlert.setCancelable(true);
-            dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent intent = new Intent(Intent.ACTION_MAIN);
-                    intent.addCategory(Intent.CATEGORY_HOME);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            dlgAlert.create().show();
+            e2.printStackTrace();
 		}
 		date = (String) output[0];
 		name = (String) output[1];
-		schedule = (ArrayList<String[]>) output[2];
-		setScheduleDate(date);
-        LinearLayout lay = ((LinearLayout) findViewById(R.id.root));
-        lay.setVisibility(View.INVISIBLE);
-		display(root, date, name, schedule, 1);
-
+        schedule = (ArrayList<String[]>) (output[2]);
+        if(name.equalsIgnoreCase("No Internet Connection")) {
+            Intent i = new Intent(MainActivity.this, InternetActivity.class);
+            startActivity(i);
+            Log.e("Info", "No Internet");
+        } else {
+            Log.e("Info", "Have Internet");
+            setScheduleDate(date);
+            LinearLayout lay = ((LinearLayout) findViewById(R.id.root));
+            lay.setVisibility(View.INVISIBLE);
+            display(root, date, name, schedule, 1);
+        }
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		String date = "";
+        String date = "";
 		String name = "";
 		ArrayList<String[]> schedule = null;
 		output = null;
 		try {
 			output = new Retriever().execute("https://ion.tjhsst.edu/").get();
 		} catch (InterruptedException | ExecutionException e) {
-            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-            dlgAlert.setMessage(
-                    "You are not connected to the internet. Connect to a cellular network or WiFi and re-open the app.");
-            dlgAlert.setTitle("No connection");
-            dlgAlert.setCancelable(true);
-            dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent intent = new Intent(Intent.ACTION_MAIN);
-                    intent.addCategory(Intent.CATEGORY_HOME);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            dlgAlert.create().show();
+            e.printStackTrace();
 		}
 		date = (String) output[0];
 		name = (String) output[1];
-		schedule = (ArrayList<String[]>) output[2];
-		setScheduleDate(date);
-		display(((LinearLayout) findViewById(R.id.root)), date, name, schedule, -1);
-
+        if(name.equalsIgnoreCase("No Internet Connection")) {
+            Intent i = new Intent(getBaseContext(), InternetActivity.class);
+            startActivity(i);
+        } else {
+            schedule = (ArrayList<String[]>) output[2];
+            setScheduleDate(date);
+            display(((LinearLayout) findViewById(R.id.root)), date, name, schedule, -1);
+        }
 	}
 
 	private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -793,7 +767,7 @@ public class MainActivity extends Activity {
 		}
 		schedYear = year;
 		schedMonth = month;
-		schedDay = day;
+		schedDay = realYear;
 		return;
 	}
 
@@ -817,28 +791,18 @@ public class MainActivity extends Activity {
 			try {
 				output = new Retriever().execute("https://ion.tjhsst.edu/?date=" + parameter).get();
 			} catch (InterruptedException | ExecutionException e) {
-                AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-                dlgAlert.setMessage(
-                        "You are not connected to the internet. Connect to a cellular network or WiFi and re-open the app.");
-                dlgAlert.setTitle("No connection");
-                dlgAlert.setCancelable(true);
-                dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(Intent.ACTION_MAIN);
-                        intent.addCategory(Intent.CATEGORY_HOME);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-                dlgAlert.create().show();
+                e.printStackTrace();
             }
 			date = (String) output[0];
 			name = (String) output[1];
-			schedule = (ArrayList<String[]>) output[2];
-			setScheduleDate(date);
-			display(which, date, name, schedule, -1);
-
+            if(name.equalsIgnoreCase("No Internet Connection")) {
+                Intent i = new Intent(getBaseContext(), InternetActivity.class);
+                startActivity(i);
+            } else {
+                schedule = (ArrayList<String[]>) output[2];
+                setScheduleDate(date);
+                display(which, date, name, schedule, -1);
+            }
 		} else {
 			Calendar cal = Calendar.getInstance();
 			cal.set(Calendar.YEAR, schedYear);
@@ -857,28 +821,18 @@ public class MainActivity extends Activity {
 			try {
 				output = new Retriever().execute("https://ion.tjhsst.edu/?date=" + parameter).get();
 			}catch (InterruptedException | ExecutionException e) {
-                AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-                dlgAlert.setMessage(
-                        "You are not connected to the internet. Connect to a cellular network or WiFi and re-open the app.");
-                dlgAlert.setTitle("No connection");
-                dlgAlert.setCancelable(true);
-                dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(Intent.ACTION_MAIN);
-                        intent.addCategory(Intent.CATEGORY_HOME);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-                dlgAlert.create().show();
+                e.printStackTrace();
             }
 			date = (String) output[0];
 			name = (String) output[1];
-			schedule = (ArrayList<String[]>) output[2];
-			setScheduleDate(date);
-			display(which, date, name, schedule, -1);
-
+            if(name.equalsIgnoreCase("No Internet Connection")) {
+                Intent i = new Intent(getBaseContext(), InternetActivity.class);
+                startActivity(i);
+            } else {
+                schedule = (ArrayList<String[]>) output[2];
+                setScheduleDate(date);
+                display(which, date, name, schedule, -1);
+            }
 		}
 	}
 
@@ -971,7 +925,7 @@ public class MainActivity extends Activity {
 		else
 			type.setTextColor(Color.BLACK);
 		which.addView(type);
-
+        Log.e("Sched", Arrays.toString(schedule.toArray()));
 		for (String[] pair : schedule) {
 			if (!pair[0].contains("Passing")) {
 				if (pair[0] == currentClass && buttonsPressed == 0
@@ -1049,36 +1003,27 @@ public class MainActivity extends Activity {
 			try {
 				output = new Retriever().execute("https://ion.tjhsst.edu").get();
 			} catch (InterruptedException | ExecutionException e) {
-                AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-                dlgAlert.setMessage(
-                        "You are not connected to the internet. Connect to a cellular network or WiFi and re-open the app.");
-                dlgAlert.setTitle("No connection");
-                dlgAlert.setCancelable(true);
-                dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(Intent.ACTION_MAIN);
-                        intent.addCategory(Intent.CATEGORY_HOME);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-                dlgAlert.create().show();
+                e.printStackTrace();
             }
 			date = (String) output[0];
 			name = (String) output[1];
-			schedule = (ArrayList<String[]>) output[2];
-			setScheduleDate(date);
-			//display((LinearLayout) findViewById(R.id.root), date, name, schedule, 1);
+            if(name.equalsIgnoreCase("No Internet Connection")) {
+                Intent i = new Intent(getBaseContext(), InternetActivity.class);
+                startActivity(i);
+            } else {
+                schedule = (ArrayList<String[]>) output[2];
+                setScheduleDate(date);
+                //display((LinearLayout) findViewById(R.id.root), date, name, schedule, 1);
 
-			String stored = date + "," + name + ",";
-			for (String[] classes : schedule) {
-				stored += classes[0] + "," + classes[1] + ",";
-			}
-			stored = stored.substring(0, stored.length() - 1);
-			writeToFile(stored);
-			Intent intent = new Intent(this, SettingsActivity.class);
-			startActivity(intent);
+                String stored = date + "," + name + ",";
+                for (String[] classes : schedule) {
+                    stored += classes[0] + "," + classes[1] + ",";
+                }
+                stored = stored.substring(0, stored.length() - 1);
+                writeToFile(stored);
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+            }
 			return true;
 		case R.id.timer:
 			String date2 = "";
@@ -1088,37 +1033,28 @@ public class MainActivity extends Activity {
 			try {
 				output = new Retriever().execute("https://ion.tjhsst.edu").get();
 			} catch (InterruptedException | ExecutionException e) {
-                AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-                dlgAlert.setMessage(
-                        "You are not connected to the internet. Connect to a cellular network or WiFi and re-open the app.");
-                dlgAlert.setTitle("No connection");
-                dlgAlert.setCancelable(true);
-                dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(Intent.ACTION_MAIN);
-                        intent.addCategory(Intent.CATEGORY_HOME);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-                dlgAlert.create().show();
+                e.printStackTrace();
             }
 			date2 = (String) output[0];
 			name2 = (String) output[1];
 			schedule2 = (ArrayList<String[]>) output[2];
-			setScheduleDate(date2);
-			display((LinearLayout) findViewById(R.id.root), date2, name2, schedule2, -1);
+            if(name2.equalsIgnoreCase("No Internet Connection")) {
+                Intent i = new Intent(getBaseContext(), InternetActivity.class);
+                startActivity(i);
+            } else {
+                setScheduleDate(date2);
+                display((LinearLayout) findViewById(R.id.root), date2, name2, schedule2, -1);
 
-			String stored2 = date2 + "," + name2 + ",";
-			for (String[] classes : schedule2) {
-				stored2 += classes[0] + "," + classes[1] + ",";
-			}
-			stored2 = stored2.substring(0, stored2.length() - 1);
-			writeToFile(stored2);
-			Intent intent2 = new Intent(MainActivity.this, TimerActivity.class);
-			startActivity(intent2);
-			overridePendingTransition(R.anim.pull_in_up, R.anim.push_out_down);
+                String stored2 = date2 + "," + name2 + ",";
+                for (String[] classes : schedule2) {
+                    stored2 += classes[0] + "," + classes[1] + ",";
+                }
+                stored2 = stored2.substring(0, stored2.length() - 1);
+                writeToFile(stored2);
+                Intent intent2 = new Intent(MainActivity.this, TimerActivity.class);
+                startActivity(intent2);
+                overridePendingTransition(R.anim.pull_in_up, R.anim.push_out_down);
+            }
 		case R.id.refresh:
 			String date1 = "";
 			String name1 = "";
@@ -1127,37 +1063,28 @@ public class MainActivity extends Activity {
 			try {
 				output = new Retriever().execute("https://ion.tjhsst.edu").get();
 			} catch (InterruptedException | ExecutionException e) {
-                AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-                dlgAlert.setMessage(
-                        "You are not connected to the internet. Connect to a cellular network or WiFi and re-open the app.");
-                dlgAlert.setTitle("No connection");
-                dlgAlert.setCancelable(true);
-                dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(Intent.ACTION_MAIN);
-                        intent.addCategory(Intent.CATEGORY_HOME);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-                dlgAlert.create().show();
+                e.printStackTrace();
             }
 			date1 = (String) output[0];
 			name1 = (String) output[1];
 			schedule1 = (ArrayList<String[]>) output[2];
-			setScheduleDate(date1);
-			((LinearLayout) findViewById(R.id.root)).removeAllViews();
-			((LinearLayout) findViewById(R.id.root1)).removeAllViews();
-            LinearLayout lay = ((LinearLayout) findViewById(R.id.root));
-            lay.setVisibility(View.INVISIBLE);
-			display((LinearLayout) findViewById(R.id.root), date1, name1, schedule1, 1);
-			String stored1 = date1 + "," + name1 + ",";
-			for (String[] classes : schedule1) {
-				stored1 += classes[0] + "," + classes[1] + ",";
-				stored1 = stored1.substring(0, stored1.length() - 1);
-				writeToFile(stored1);
-			}
+            if(name1.equalsIgnoreCase("No Internet Connection")) {
+                Intent i = new Intent(getBaseContext(), InternetActivity.class);
+                startActivity(i);
+            } else {
+                setScheduleDate(date1);
+                ((LinearLayout) findViewById(R.id.root)).removeAllViews();
+                ((LinearLayout) findViewById(R.id.root1)).removeAllViews();
+                LinearLayout lay = ((LinearLayout) findViewById(R.id.root));
+                lay.setVisibility(View.INVISIBLE);
+                display((LinearLayout) findViewById(R.id.root), date1, name1, schedule1, 1);
+                String stored1 = date1 + "," + name1 + ",";
+                for (String[] classes : schedule1) {
+                    stored1 += classes[0] + "," + classes[1] + ",";
+                    stored1 = stored1.substring(0, stored1.length() - 1);
+                    writeToFile(stored1);
+                }
+            }
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -1198,6 +1125,9 @@ class Retriever extends AsyncTask<String, Void, Object[]> {
 				Elements els = doc.getElementsByClass("block");
 				els.addAll(doc.getElementsByClass("times"));
 				String date = doc.getElementsByClass("schedule-date").get(0).text();
+                Elements div = doc.getElementsByClass("schedule");
+                String attr = div.first().attr("data-date");
+                MainActivity.realYear = Integer.parseInt(attr.split("-")[0]);
 				String name = doc.getElementsByClass("day-name").get(0).text();
 				List<Element> els2 = els.subList(els.size() / 2, els.size());
 				List<Element> els1 = els.subList(0, els.size() / 2);
@@ -1215,7 +1145,9 @@ class Retriever extends AsyncTask<String, Void, Object[]> {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null;
+        ArrayList<String[]> schedule = new ArrayList<String[]>();
+        Object[] output = { "", "No Internet Connection",schedule};
+		return output;
 	}
 
 	protected void onPostExecute(Boolean result) {

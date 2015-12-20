@@ -1,5 +1,9 @@
 [
     {
+        "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/fade_in_view.xml",
+        "source": "/Users/akotnana/StudioProjects/Ionite/app/src/main/res/anim/fade_in_view.xml"
+    },
+    {
         "merged": "/Users/akotnana/StudioProjects/Ionite/app/build/intermediates/res/merged/debug/anim/pull_in_down.xml",
         "source": "/Users/akotnana/StudioProjects/Ionite/app/src/main/res/anim/pull_in_down.xml"
     },

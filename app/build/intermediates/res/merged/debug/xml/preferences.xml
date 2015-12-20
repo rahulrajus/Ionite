@@ -21,7 +21,7 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="Animations">
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="truerue"
             android:key="animationSelector"
             android:summary="This option if selected will enable animations."
             android:title="Enable Animations" />

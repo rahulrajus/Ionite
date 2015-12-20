@@ -220,6 +220,7 @@
     <string name="notif_pub">Publishes Notifications</string>
     <string name="restart">Restarts the service</string>
     <string name="status_bar_notification_info_overflow">999+</string>
+    <string name="title_activity_internet">InternetActivity</string>
     <string name="title_activity_settings">Settings</string>
     <style name="AlertDialog.AppCompat" parent="Base.AlertDialog.AppCompat"/>
     <style name="AlertDialog.AppCompat.Light" parent="Base.AlertDialog.AppCompat.Light"/>
