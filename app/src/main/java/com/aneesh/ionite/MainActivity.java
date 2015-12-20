@@ -1125,9 +1125,9 @@ class Retriever extends AsyncTask<String, Void, Object[]> {
 				Elements els = doc.getElementsByClass("block");
 				els.addAll(doc.getElementsByClass("times"));
 				String date = doc.getElementsByClass("schedule-date").get(0).text();
-                Elements div = doc.getElementsByClass("schedule");
-                String attr = div.first().attr("data-date");
-                MainActivity.realYear = Integer.parseInt(attr.split("-")[0]);
+                		Elements div = doc.getElementsByClass("schedule");
+                		String attr = div.first().attr("data-date");
+                		MainActivity.realYear = Integer.parseInt(attr.split("-")[0]);
 				String name = doc.getElementsByClass("day-name").get(0).text();
 				List<Element> els2 = els.subList(els.size() / 2, els.size());
 				List<Element> els1 = els.subList(0, els.size() / 2);
