@@ -146,7 +146,7 @@ public class MainActivity extends Activity {
                     startActivity(i);
                 } else {
                     schedule = (ArrayList<String[]>) output[2];
-                    if (date.split(", |\\. ").length > 2)
+                    if (date.split("[\\s,\\.]+").length > 2)
                         setScheduleDate(date);
                     else {
                         schedYear = selectedYear;
@@ -716,7 +716,7 @@ public class MainActivity extends Activity {
 	}
 
 	public void setScheduleDate(String date) {
-		String[] stuff = date.split(", |\\. ");
+		String[] stuff = date.split("[\\s,\\.]+");
 		int month = 0;
 		int day = Integer.parseInt(stuff[2]);
 		int year = 0;
@@ -758,16 +758,9 @@ public class MainActivity extends Activity {
 			month = 11;
 			break;
 		}
-		Calendar cal = Calendar.getInstance();
-		if (cal.get(Calendar.MONTH) == 11 && month == 0) {
-			cal.add(Calendar.YEAR, 1);
-			year = cal.get(Calendar.YEAR);
-		} else {
-			year = cal.get(Calendar.YEAR);
-		}
-		schedYear = year;
+		schedYear = realYear;
 		schedMonth = month;
-		schedDay = realYear;
+		schedDay = day;
 		return;
 	}
 
@@ -1127,7 +1120,9 @@ class Retriever extends AsyncTask<String, Void, Object[]> {
 				String date = doc.getElementsByClass("schedule-date").get(0).text();
                 Elements div = doc.getElementsByClass("schedule");
                 String attr = div.first().attr("data-date");
-                MainActivity.realYear = Integer.parseInt(attr.split("-")[0]);
+                int integer = Integer.parseInt(attr.split("-")[0]);
+				Log.d("Year", "" + integer);
+				MainActivity.realYear = integer;
 				String name = doc.getElementsByClass("day-name").get(0).text();
 				List<Element> els2 = els.subList(els.size() / 2, els.size());
 				List<Element> els1 = els.subList(0, els.size() / 2);
