@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Notifications">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="startPeriod"
+            android:summary="This option if selected will send a notification whenever a period starts."
+            android:title="Period Start Notifications" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="endPeriod"
+            android:summary="This option if selected will send a notification whenever a period ends."
+            android:title="Period End Notifications" />
+
+        <com.aneesh.ionite.NumberPickerPreference
+            android:defaultValue="0"
+            android:key="delayTime"
+            android:summary="Allows you to change the minutes in advance the notification should appear."
+            android:title="Period Warning Time." />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Animations">
+        <CheckBoxPreference
+            android:defaultValue="truerue"
+            android:key="animationSelector"
+            android:summary="This option if selected will enable animations."
+            android:title="Enable Animations" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Display">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="DispOp"
+            android:summary="Diplay the time left in the period in the format: hh:mm:ss"
+            android:title="Timer Display" />
+    </PreferenceCategory>
+</PreferenceScreen>

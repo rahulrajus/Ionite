@@ -11,17 +11,44 @@ public class OnSwipeTouchListener implements OnTouchListener {
 
     protected final GestureDetector gestureDetector;
 
-    public OnSwipeTouchListener (Context ctx){
+    public OnSwipeTouchListener(Context ctx) {
         gestureDetector = new GestureDetector(ctx, new GestureListener());
+    }
+
+    public void onSwipeRight() {
+    }
+
+    public void openTheThing() {
+    }
+
+    public void onSwipeLeft() {
+    }
+
+    public void onSwipeTop() {
+    }
+
+    public void onSwipeBottom() {
+    }
+
+    @Override
+    public boolean onTouch(View arg0, MotionEvent arg1) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
     private final class GestureListener extends SimpleOnGestureListener {
 
-        private static final int SWIPE_THRESHOLD = 100;
-        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+        private static final int SWIPE_THRESHOLD = 50;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 50;
 
         @Override
         public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            openTheThing();
             return true;
         }
 
@@ -40,15 +67,14 @@ public class OnSwipeTouchListener implements OnTouchListener {
                         }
                     }
                     result = true;
-                } 
-                else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-                        if (diffY > 0) {
-                            onSwipeBottom();
-                        } else {
-                            onSwipeTop();
-                        }
+                } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                    if (diffY > 0) {
+                        onSwipeBottom();
+                    } else {
+                        onSwipeTop();
                     }
-                    result = true;
+                }
+                result = true;
 
             } catch (Exception exception) {
                 exception.printStackTrace();
@@ -56,22 +82,4 @@ public class OnSwipeTouchListener implements OnTouchListener {
             return result;
         }
     }
-
-    public void onSwipeRight() {
-    }
-
-    public void onSwipeLeft() {
-    }
-
-    public void onSwipeTop() {
-    }
-
-    public void onSwipeBottom() {
-    }
-
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 }

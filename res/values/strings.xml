@@ -4,5 +4,11 @@
     <string name="app_name">Ionite</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="day_cycler">Runns AlarmCreator</string>
+    <string name="restart">Restarts the service</string>
+    <string name="notif_pub">Publishes Notifications</string>
+    <string name="alarm_creator">Creates Alarms</string>
+    <string name="title_activity_internet">InternetActivity</string>
 
 </resources>

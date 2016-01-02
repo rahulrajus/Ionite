@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/action_jump"
-        android:icon="@drawable/ic_menu_search_holo_dark"
+        android:id="@+id/refresh"
+        android:icon="@drawable/ic_menu_refresh"
         android:orderInCategory="101"
         android:showAsAction="ifRoom"
-        android:title="Search for a date"/>
-    
+        android:title="Reload to current date" />
     <item
-        android:id="@+id/settings"
-        android:icon="@drawable/ic_settings"
+        android:id="@+id/timer"
+        android:icon="@drawable/ic_menu_recent_history"
         android:orderInCategory="102"
         android:showAsAction="ifRoom"
-        android:title="Settings"/>
+        android:title="View time until class ends" />
+    <item
+        android:id="@+id/action_jump"
+        android:icon="@drawable/ic_menu_search"
+        android:orderInCategory="103"
+        android:showAsAction="ifRoom"
+        android:title="Search for a date" />
+
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_menu_preferences"
+        android:orderInCategory="104"
+        android:showAsAction="ifRoom"
+        android:title="Settings" />
 
 </menu>
